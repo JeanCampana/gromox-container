@@ -22,6 +22,7 @@ volumes:
   grommunio_admin_api:
   grommunio_antispam:
   grommunio_dav:
+  grommunio_web:
   opensuse_data:
   gromox:
   gromox_config:
@@ -177,6 +178,7 @@ services:
       - grommunio_admin_api:/var/lib/grommunio-admin-api
       - grommunio_antispam:/var/lib/grommunio-antispam
       - grommunio_dav:/var/lib/grommunio-dav
+      - grommunio_web:/var/lib/grommunio-web
       - gromox:/var/lib/gromox
       - gromox_config:/etc/gromox
       - gromox_letsencrypt:/etc/letsencrypt
