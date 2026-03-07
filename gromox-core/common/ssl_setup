@@ -60,7 +60,7 @@ letsencrypt() {
   echo "No existing certificates found for ${FQDN}, running Certbot..."
   [ -e "/etc/nginx/conf.d/grommunio.conf" ] && mv "/etc/nginx/conf.d/grommunio.conf" "/etc/nginx/conf.d/grommunio.conf.grommunio-setup"
 
-  systemctl stop nginx >>"${LOGFILE}" 2>&1
+  # nginx is not running during config phase, no need to stop it
   certbot certonly -n --standalone --agree-tos \
     --preferred-challenges http \
     --cert-name="${FQDN}" \
@@ -72,9 +72,6 @@ letsencrypt() {
   cat "/etc/letsencrypt/live/${FQDN}/cert.pem" "/etc/letsencrypt/live/${FQDN}/fullchain.pem" > "${SSL_BUNDLE_T}"
   cp -f "/etc/letsencrypt/live/${FQDN}/privkey.pem" "${SSL_KEY_T}"
 
-  {
-    systemctl enable grommunio-certbot-renew.timer
-    systemctl start grommunio-certbot-renew.timer
-  } >>"${LOGFILE}" 2>&1
+  # certbot renewal is handled via crontab in docker-entrypoint.sh
 
 }
