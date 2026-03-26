@@ -46,7 +46,6 @@ RUN zypper -n install -y python311 python311-pip && \
 RUN    groupadd 'wheel' &&                         \
     useradd -m -s /bin/bash -G wheel admin && echo "admin:admin" | chpasswd
 
-COPY gromox-office/scripts /home/scripts
 COPY gromox-office/common /home/common
 COPY gromox-office/config /home/config
 
