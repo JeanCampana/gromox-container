@@ -179,8 +179,8 @@ services:
       - gromox_letsencrypt:/etc/letsencrypt
     ports:
       - "25:2525"    # SMTP
-      - "80:8080"    # HTTP / Letsencrypt challenges
-      - "443:8443"   # HTTPS / Grommunio Web
+#      - "80:8080"    # HTTP / Letsencrypt challenges
+#      - "443:8443"   # HTTPS / Grommunio Web
       - "465:2465"   # SMTPS
       - "993:2993"   # IMAPS
       - "110:2110"   # POP3
