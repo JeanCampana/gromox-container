@@ -12,21 +12,39 @@ networks:
           gateway: "fd00:1::1"
 
 volumes:
-  gromox_services:
-  cert_data:
+  # Volumes dinâmicos baseados no UUID do Coolify
   gromox_mysql_data:
+    name: ${COOLIFY_RESOURCE_UUID}_gromox-mysql-data
   chat_mysql_data:
+    name: ${COOLIFY_RESOURCE_UUID}_chat-mysql-data
   files_mysql_data:
+    name: ${COOLIFY_RESOURCE_UUID}_files-mysql-data
   office_mysql_data:
+    name: ${COOLIFY_RESOURCE_UUID}_office-mysql-data
   archive_mysql_data:
-  grommunio_admin_api:
-  grommunio_antispam:
-  grommunio_dav:
-  grommunio_web:
+    name: ${COOLIFY_RESOURCE_UUID}_archive-mysql-data
   opensuse_data:
-  gromox:
-  gromox_config:
+    name: ${COOLIFY_RESOURCE_UUID}_opensuse-data
   variables_data:
+    name: ${COOLIFY_RESOURCE_UUID}_variables-data
+  cert_data:
+    name: ${COOLIFY_RESOURCE_UUID}_cert-data
+  gromox_services:
+    name: ${COOLIFY_RESOURCE_UUID}_gromox-services
+  grommunio_admin_api:
+    name: ${COOLIFY_RESOURCE_UUID}_grommunio-admin-api
+  grommunio_antispam:
+    name: ${COOLIFY_RESOURCE_UUID}_grommunio-antispam
+  grommunio_dav:
+    name: ${COOLIFY_RESOURCE_UUID}_grommunio-dav
+  grommunio_web:
+    name: ${COOLIFY_RESOURCE_UUID}_grommunio-web
+  gromox:
+    name: ${COOLIFY_RESOURCE_UUID}_gromox
+  gromox_config:
+    name: ${COOLIFY_RESOURCE_UUID}_gromox-config
+  # Volumes Bind para persistência local direta
+  variables_bind:
     driver: local
     driver_opts:
       type: none
@@ -40,25 +58,22 @@ volumes:
       device: ${PWD}/gromox_letsencrypt
 
 services:
+  # --- BANCOS DE DADOS ---
   gromox-db:
     image: mariadb:10
-    container_name: gromox-db
+    container_name: gromox-db-${COOLIFY_RESOURCE_UUID}
     environment:
-      MARIADB_ROOT_PASSWORD: Lu3s3WmFxXghtLwJnuqN
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: grommunio
       MARIADB_USER: grommunio
-      MARIADB_PASSWORD: Lu3s3WmFxXghtLwJnuqN
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     volumes:
       - gromox_mysql_data:/var/lib/mysql
     restart: on-failure
     healthcheck:
-      test: mariadb --host=localhost --user=$${MARIADB_USER} --password=$${MARIADB_PASSWORD} -e 'SELECT 1;'
+      test: ["CMD", "mariadb", "--host=localhost", "--user=grommunio", "--password=${MARIADB_PASSWORD}", "-e", "SELECT 1;"]
       interval: 30s
-      timeout: 10s
       retries: 5
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
     networks:
       grommunio:
         aliases:
@@ -66,23 +81,17 @@ services:
 
   chat-db:
     image: mariadb:10
-    container_name: chat-db
+    container_name: chat-db-${COOLIFY_RESOURCE_UUID}
     environment:
-      MARIADB_ROOT_PASSWORD: Lu3s3WmFxXghtLwJnuqN
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: grochat
       MARIADB_USER: grochat
-      MARIADB_PASSWORD: grommunio
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     volumes:
       - chat_mysql_data:/var/lib/mysql
     restart: on-failure
     healthcheck:
-      test: mariadb --host=localhost --user=$${MARIADB_USER} --password=$${MARIADB_PASSWORD} -e 'SELECT 1;'
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
+      test: ["CMD", "mariadb", "--host=localhost", "--user=grochat", "--password=${MARIADB_PASSWORD}", "-e", "SELECT 1;"]
     networks:
       grommunio:
         aliases:
@@ -90,23 +99,17 @@ services:
 
   files-db:
     image: mariadb:10
-    container_name: files-db
+    container_name: files-db-${COOLIFY_RESOURCE_UUID}
     environment:
-      MARIADB_ROOT_PASSWORD: Lu3s3WmFxXghtLwJnuqN
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: grofiles
       MARIADB_USER: grofiles
-      MARIADB_PASSWORD: grommunio
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     volumes:
       - files_mysql_data:/var/lib/mysql
     restart: on-failure
     healthcheck:
-      test: mariadb --host=localhost --user=$${MARIADB_USER} --password=$${MARIADB_PASSWORD} -e 'SELECT 1;'
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
+      test: ["CMD", "mariadb", "--host=localhost", "--user=grofiles", "--password=${MARIADB_PASSWORD}", "-e", "SELECT 1;"]
     networks:
       grommunio:
         aliases:
@@ -114,23 +117,17 @@ services:
 
   office-db:
     image: mariadb:10
-    container_name: office-db
+    container_name: office-db-${COOLIFY_RESOURCE_UUID}
     environment:
-      MARIADB_ROOT_PASSWORD: Lu3s3WmFxXghtLwJnuqN
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: groffice
       MARIADB_USER: groffice
-      MARIADB_PASSWORD: grommunio
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     volumes:
       - office_mysql_data:/var/lib/mysql
     restart: on-failure
     healthcheck:
-      test: mariadb --host=localhost --user=$${MARIADB_USER} --password=$${MARIADB_PASSWORD} -e 'SELECT 1;'
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
+      test: ["CMD", "mariadb", "--host=localhost", "--user=groffice", "--password=${MARIADB_PASSWORD}", "-e", "SELECT 1;"]
     networks:
       grommunio:
         aliases:
@@ -138,36 +135,32 @@ services:
 
   archive-db:
     image: mariadb:10
-    container_name: archive-db
+    container_name: archive-db-${COOLIFY_RESOURCE_UUID}
     environment:
-      MARIADB_ROOT_PASSWORD: Lu3s3WmFxXghtLwJnuqN
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: groarchive
       MARIADB_USER: groarchive
-      MARIADB_PASSWORD: grommunio
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
     volumes:
       - archive_mysql_data:/var/lib/mysql
     restart: on-failure
     healthcheck:
-      test: mariadb --host=localhost --user=$${MARIADB_USER} --password=$${MARIADB_PASSWORD} -e 'SELECT 1;'
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
+      test: ["CMD", "mariadb", "--host=localhost", "--user=groarchive", "--password=${MARIADB_PASSWORD}", "-e", "SELECT 1;"]
     networks:
       grommunio:
         aliases:
           - archive-db
 
+  # --- SERVIÇOS CORE ---
   gromox-core:
     build:
       context: ./
       dockerfile: ./gromox-core/Dockerfile
+    container_name: gromox-core-${COOLIFY_RESOURCE_UUID}
     restart: on-failure
     volumes:
       - opensuse_data:/data
-      - variables_data:/home/vars
+      - variables_bind:/home/vars
       - cert_data:/etc/grommunio-common/ssl
       - gromox_services:/home/gromox-services
       - grommunio_admin_api:/var/lib/grommunio-admin-api
@@ -178,90 +171,72 @@ services:
       - gromox_config:/etc/gromox
       - gromox_letsencrypt:/etc/letsencrypt
     ports:
-      - "25:2525"    # SMTP
-#      - "80:8080"    # HTTP / Letsencrypt challenges
-#      - "443:8443"   # HTTPS / Grommunio Web
-      - "465:2465"   # SMTPS
-      - "993:2993"   # IMAPS
-      - "110:2110"   # POP3
-      - "143:2143"   # IMAP
-      - "587:2587"   # SMTP Submission
-      - "995:2995"   # POP3S
-      - "8443:9443"  # Grommunio Admin / HTTPS alternative
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
+      - "25:2525"   # SMTP
+      - "465:2465"  # SMTPS
+      - "993:2993"  # IMAPS
+      - "110:2110"  # POP3
+      - "143:2143"  # IMAP
+      - "587:2587"  # Submission
+      - "995:2995"  # POP3S
+      - "8443:9443" # Admin
     networks:
       grommunio:
         aliases:
           - gromox-core
     env_file:
       - var.env
+      - .env
     depends_on:
-      gromox-db:
-        condition: service_healthy
-      chat-db:
-        condition: service_healthy
-      files-db:
-        condition: service_healthy
-      office-db:
-        condition: service_healthy
-      archive-db:
-        condition: service_healthy
+      gromox-db: { condition: service_healthy }
+      chat-db: { condition: service_healthy }
+      files-db: { condition: service_healthy }
+      office-db: { condition: service_healthy }
+      archive-db: { condition: service_healthy }
 
   gromox-archive:
     build:
       context: ./
       dockerfile: ./gromox-archive/Dockerfile
+    container_name: gromox-archive-${COOLIFY_RESOURCE_UUID}
     restart: on-failure
     volumes:
       - opensuse_data:/data
-      - variables_data:/home/vars
+      - variables_bind:/home/vars
       - cert_data:/etc/grommunio-common/ssl
     expose:
-      - "8443"   # HTTPS (nginx)
-      - "2693"   # Archive SMTP
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
+      - "8443"
+      - "2693"
     networks:
       grommunio:
         aliases:
           - gromox-archive
     env_file:
       - var.env
+      - .env
     depends_on:
-      gromox-db:
-        condition: service_healthy
-      archive-db:
-        condition: service_healthy
-      gromox-core:
-        condition: service_started
+      gromox-db: { condition: service_healthy }
+      archive-db: { condition: service_healthy }
+      gromox-core: { condition: service_started }
 
   gromox-office:
     build:
       context: ./
       dockerfile: ./gromox-office/Dockerfile
+    container_name: gromox-office-${COOLIFY_RESOURCE_UUID}
     restart: on-failure
     volumes:
       - opensuse_data:/data
-      - variables_data:/home/vars
+      - variables_bind:/home/vars
       - cert_data:/etc/grommunio-common/ssl
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
     networks:
       grommunio:
         aliases:
           - gromox-office
     env_file:
       - var.env
+      - .env
     depends_on:
-      gromox-db:
-        condition: service_healthy
-      files-db:
-        condition: service_healthy
-      office-db:
-        condition: service_healthy
-      gromox-core:
-        condition: service_started
+      gromox-db: { condition: service_healthy }
+      files-db: { condition: service_healthy }
+      office-db: { condition: service_healthy }
+      gromox-core: { condition: service_started }
